@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gtk_flutter/src/authentication.dart';
+import 'package:gtk_flutter/src/guestbook.dart';
+import 'package:provider/provider.dart';
 
+import 'auth_provider.dart';
 import 'src/widgets.dart';
 
 void main() {
-  runApp(App());
+  runApp(ChangeNotifierProvider(
+    create: (context) => ApplicationState(),
+    builder: (context, _) => App(),
+  ),);
 }
 
 class App extends StatelessWidget {
@@ -42,6 +49,18 @@ class HomePage extends StatelessWidget {
           SizedBox(height: 8),
           IconAndDetail(Icons.calendar_today, 'October 30'),
           IconAndDetail(Icons.location_city, 'San Francisco'),
+          Consumer<ApplicationState>(
+            builder: (context, appState, _) => Authentication(
+              email: appState.email,
+              loginState: appState.loginState,
+              startLoginFlow: appState.startLoginFlow,
+              verifyEmail: appState.verifyEmail,
+              signInWithEmailAndPassword: appState.signInWithEmailAndPassword,
+              cancelRegistration: appState.cancelRegistration,
+              registerAccount: appState.registerAccount,
+              signOut: appState.signOut,
+            ),
+          ),
           Divider(
             height: 8,
             thickness: 1,
@@ -52,6 +71,20 @@ class HomePage extends StatelessWidget {
           Header("What we'll be doing"),
           Paragraph(
             'Join us for a day full of Firebase Workshops and Pizza!',
+          ),
+          Consumer<ApplicationState>(
+            builder: (context, appState, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (appState.loginState == ApplicationLoginState.loggedIn) ...[
+                  Header('Discussion'),
+                  GuestBook(
+                    addMessage: (String message) =>
+                        appState.addMessageToGuestBook(message), messages: appState.guestBookMessages,
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
